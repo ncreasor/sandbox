@@ -4,6 +4,7 @@ Bash Tool - Execute bash commands
 
 import subprocess
 import logging
+import sys
 from typing import Dict, Any
 
 
@@ -51,12 +52,17 @@ Timeout: 30 seconds default.""",
         self.logger.info(f"Executing: {command}")
 
         try:
+            # Detect system encoding (cp1251 on Russian Windows, utf-8 on Linux)
+            system_encoding = sys.stdout.encoding or 'utf-8'
+
             # Execute command
             result = subprocess.run(
                 command,
                 shell=True,
                 capture_output=True,
                 text=True,
+                encoding=system_encoding,
+                errors='replace',  # Replace invalid chars instead of crashing
                 timeout=timeout
             )
 
