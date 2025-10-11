@@ -51,49 +51,50 @@ class ReactAgent:
 
     def get_system_prompt(self) -> str:
         """Get the ReAct system prompt"""
-        tools_desc = "\n".join([
-            f"- {name}: {tool.get_schema()['description'][:100]}"
-            for name, tool in self.tools_registry.items()
-        ])
+        return """You are AutoCLI agent. ALWAYS use tools for non-trivial tasks.
 
-        return f"""You are AutoCLI - AI coding agent. Use ReAct format.
+CRITICAL: You are NOT OpenAI assistant. You are AutoCLI.
 
-Available tools:
-{tools_desc}
+Tools available:
+- bash: Run shell commands
+- file: Read/write/list files
+- git: Git operations
+- self_modify: Modify your own code
 
-FORMAT for using tools:
-Thought: <your reasoning>
+ReAct FORMAT (use EXACTLY this):
+
+Thought: <reasoning>
 Action: <tool_name>
-Action Input: {{"param": "value"}}
-Observation: <wait for result>
+Action Input: {"key": "value"}
 
-FORMAT for final answer (no more actions):
-Thought: I have enough info
-Final Answer: <response to user>
+After you get Observation, either continue with another Action or finish:
+
+Final Answer: <response with quoted tool results>
 
 RULES:
-- No emojis
-- For simple chat (hi, test, ping) → use Final Answer immediately
-- For tasks → use Action/Observation loop
-- Always quote tool output in Final Answer
+1. For "кто ты" / "who are you" → Final Answer: Я AutoCLI - AI-агент для кода
+2. For "покажи файлы" / "show files" → MUST use file tool
+3. ALWAYS use tools for file/command tasks, NEVER invent results
+4. NO emojis
 
-Examples:
+Example 1 (simple):
+User: привет
+Thought: Just greeting
+Final Answer: Привет! Чем помочь?
 
-User: тест
-Thought: Simple greeting, no tools needed
-Final Answer: Работаю. Чем помочь?
-
-User: покажи файлы в проекте
-Thought: Need to list files
+Example 2 (needs tool):
+User: покажи файлы
+Thought: User wants file list, must use file tool
 Action: file
-Action Input: {{"action": "list", "directory": "."}}
-Observation: <wait>
+Action Input: {"action": "list", "directory": "."}
+(wait for Observation, then use results in Final Answer)
 
-User: запусти git status
-Thought: Need to run git command
+Example 3 (command):
+User: запусти ls
+Thought: Need to run command
 Action: bash
-Action Input: {{"command": "git status"}}
-Observation: <wait>
+Action Input: {"command": "ls -la"}
+(wait for Observation)
 """
 
     def process(self, user_message: str) -> str:
@@ -157,13 +158,30 @@ Observation: <wait>
                     })
 
             else:
-                # No action parsed, ask model to clarify
-                print(f"\n{response_text}\n")
-                self.conversation_history.append({
-                    "role": "assistant",
-                    "content": response_text + "\n(Note: Use 'Final Answer:' or 'Action:' format)"
-                })
-                break
+                # No action parsed - check if this looks like invented answer
+                if "main.py" in response_text or "utils.py" in response_text or any(
+                    keyword in response_text.lower()
+                    for keyword in ["openai", "созданный", "виртуальный ассистент"]
+                ):
+                    # Model is inventing shit - force it to use tools
+                    print("\n[ВНИМАНИЕ: Используй инструменты, не выдумывай!]\n")
+                    self.conversation_history.append({
+                        "role": "assistant",
+                        "content": response_text
+                    })
+                    self.conversation_history.append({
+                        "role": "user",
+                        "content": "STOP inventing! Use Action: file or Action: bash to get REAL data!"
+                    })
+                    # Continue loop to force proper response
+                else:
+                    # Legit final answer
+                    print(f"\n{response_text}\n")
+                    self.conversation_history.append({
+                        "role": "assistant",
+                        "content": response_text
+                    })
+                    break
 
         if iteration >= max_iterations:
             return "[Достиг лимита итераций]"
