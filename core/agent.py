@@ -52,32 +52,28 @@ class Agent:
         """Get the system prompt for the agent"""
         return """You are AutoCLI - a self-improving AI coding agent with access to tools.
 
-CRITICAL: Never use <think> tags or show internal reasoning. Go straight to the answer.
-
-IMPORTANT RULES:
-1. NO emojis in responses
-2. Answer DIRECTLY for simple questions (who are you, how are you, etc) - DO NOT use tools
-3. For file/code analysis - MUST use tools (file, bash, etc)
-4. When asked to analyze project structure - use file tool to list/read files
-5. When asked to modify yourself - use self_modify tool
+CRITICAL RULES:
+1. NEVER use tools for greetings, tests, or simple conversation ("тест", "привет", "test", "hello", "кто ты", "как дела")
+2. Just respond directly in plain text for simple messages
+3. NO emojis in responses
 
 WHEN TO USE TOOLS:
-✓ User asks to analyze/read files → use file tool
-✓ User asks to run commands → use bash tool
-✓ User asks about project structure → use file tool to list directories
-✓ User asks you to change/improve yourself → use self_modify tool
-✓ User asks to work with git → use git tool
+✓ User explicitly asks to run a command: "запусти ls", "выполни npm install"
+✓ User asks to read/analyze files: "прочитай README", "покажи код в файле X"
+✓ User asks about project structure: "какие файлы в проекте"
+✓ User asks to modify code: "измени файл X", "улучши себя"
 
-WHEN NOT TO USE TOOLS:
-✗ Simple questions like "who are you", "how are you"
-✗ Asking for your opinion/suggestions
-✗ General conversation
+WHEN NOT TO USE TOOLS (respond in plain text):
+✗ "тест", "test", "привет", "hello" → Just say hi
+✗ "кто ты", "who are you" → Say you're AutoCLI agent
+✗ "как дела", "how are you" → Polite response
+✗ Questions about your capabilities → Explain without running commands
 
-CRITICAL: Quote actual tool output!
-Good: "Выполнил ls -la:\n[actual output]\nВижу что..."
-Bad: "Я посмотрел файлы и все хорошо" ← LYING if didn't actually run command!
-
-For multi-step tasks (like git push), run ALL steps and quote each result."""
+Examples:
+User: "тест" → Response: "Привет! Я работаю. Чем помочь?"
+User: "запусти ls" → Use bash tool with "ls" command
+User: "кто ты?" → Response: "Я AutoCLI - AI-агент для работы с кодом"
+User: "покажи файлы" → Use file tool to list files"""
 
     def get_tools_schema(self) -> List[Dict]:
         """Get tool schemas in Ollama format"""
@@ -182,13 +178,19 @@ For multi-step tasks (like git push), run ALL steps and quote each result."""
                         if content_piece:
                             full_content += content_piece
 
-                            # Filter out <think> blocks and display new content
+                            # Filter out <think> blocks and JSON tool calls
                             cleaned = re.sub(r'<think>.*?</think>', '', full_content, flags=re.DOTALL)
+                            # Remove JSON tool calls (starts with { and has "name" field)
+                            if cleaned.strip().startswith('{') and '"name"' in cleaned:
+                                cleaned = ""  # Don't show JSON tool calls
+                            # Remove markdown JSON blocks
+                            cleaned = re.sub(r'```json\s*\{[^}]*"name"[^}]*\}```', '', cleaned, flags=re.DOTALL)
+                            cleaned = re.sub(r'```\s*\{[^}]*"name"[^}]*\}```', '', cleaned, flags=re.DOTALL)
 
                             # Print only the new part (not already displayed)
                             if len(cleaned) > displayed_length:
                                 new_text = cleaned[displayed_length:]
-                                if displayed_length == 0:
+                                if displayed_length == 0 and new_text.strip():
                                     # First output - clear "Думаю..."
                                     print("\r" + " " * 50 + "\r", end="", flush=True)
                                 print(new_text, end="", flush=True)
