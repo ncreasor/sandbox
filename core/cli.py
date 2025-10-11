@@ -10,7 +10,7 @@ import logging
 from pathlib import Path
 from typing import Optional
 
-from core.agent import Agent
+from core.agent_react import ReactAgent as Agent
 
 
 class AutoCLI:
@@ -25,6 +25,10 @@ class AutoCLI:
         self._setup_logging()
         self.agent = Agent(self.config)
         self.running = True
+        self.history_file = Path(__file__).parent.parent / "logs" / "history.json"
+
+        # Load history if exists
+        self._load_history()
 
     def _load_config(self, config_path: Path) -> dict:
         """Load configuration from JSON file"""
@@ -76,6 +80,27 @@ Type anything else to chat with the agent
         """
         print(banner)
 
+    def _load_history(self):
+        """Load conversation history from file"""
+        if self.history_file.exists():
+            try:
+                with open(self.history_file, 'r', encoding='utf-8') as f:
+                    history = json.load(f)
+                    self.agent.conversation_history = history
+                    self.logger.info(f"Loaded {len(history)} messages from history")
+            except Exception as e:
+                self.logger.error(f"Failed to load history: {e}")
+
+    def _save_history(self):
+        """Save conversation history to file"""
+        try:
+            self.history_file.parent.mkdir(parents=True, exist_ok=True)
+            with open(self.history_file, 'w', encoding='utf-8') as f:
+                json.dump(self.agent.conversation_history, f, ensure_ascii=False, indent=2)
+            self.logger.info("History saved")
+        except Exception as e:
+            self.logger.error(f"Failed to save history: {e}")
+
     def print_help(self):
         """Print help message"""
         help_text = """
@@ -86,6 +111,7 @@ Available commands:
   status            - Show agent status
   improve           - Trigger self-improvement
   config            - Show current configuration
+  restart           - Save history and restart agent
 
   Or just type your request naturally!
         """
@@ -104,6 +130,8 @@ Available commands:
 
                 # Handle built-in commands
                 if user_input.lower() in ['exit', 'quit']:
+                    print("Сохраняю историю...")
+                    self._save_history()
                     print("Goodbye!")
                     self.running = False
                     break
@@ -129,6 +157,13 @@ Available commands:
                 elif user_input.lower() == 'config':
                     print(json.dumps(self.config, indent=2))
                     continue
+
+                elif user_input.lower() == 'restart':
+                    print("Сохраняю историю и перезапускаюсь...")
+                    self._save_history()
+                    import os
+                    import sys
+                    os.execv(sys.executable, [sys.executable] + sys.argv)
 
                 # Process user input through agent
                 response = self.agent.process(user_input)
