@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Страница не найдена — Barry</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
+  <link rel="icon" href="/static/logo.png" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<div id="page-loader">
+  <div class="spinner-wrapper">
+    <div class="spinner-ring"></div>
+    <img src="/static/logo-w.png" alt="Логотип" class="spinner-logo">
+  </div>
+  <p id="loader-status" class="loader-text"></p>
+
+</div>
+
+<main class="dashboard" style="display: flex; justify-content: center; align-items: center; height: 100vh;">
+  <section class="card glass-card" style="max-width: 400px; text-align: center;">
+    <h2>503</h2>
+    <p>Сервер временно недоступен/p>
+    <form action="/" method="get">
+  <button type="submit" class="save saving-btn">Может перезагрузить?</button> 
+</form>
+  </section>
+</main>
+    <script>
+document.querySelectorAll('.saving-btn').forEach(btn => {
+  const form = btn.closest('form');
+  if (form) {
+    form.addEventListener('submit', function() {
+      btn.disabled = true;
+      btn.innerHTML = 'Выход... <span class="spinner"></span>';
+    });
+  }
+});
+let lastClickedElement = null;
+
+// сохраняем последний кликнутый элемент
+document.addEventListener('mousedown', (e) => {
+  lastClickedElement = e.target;
+});
+
+const loader = document.getElementById('page-loader');
+const statusText = document.getElementById('loader-status');
+const minTime = 2000;
+const start = Date.now();
+
+const loadingPhrases = [
+  'Подключаем базу данных...',
+  'Рисуем кнопки...',
+  'Готовим интерфейс...',
+  'Настраиваем стили...',
+  'Закругляем углы...',
+  'Выравниваем текст...'
+];
+
+const finalizingPhrases = [
+  'Пинаем сервера...',
+  'Сдуваем пыль...',
+  'Вроде работает...',
+  'Почти готово...',
+  'Секунду...'
+];
+
+const requestPhrases = [
+  'Загрузка...',
+  'Запрашиваем ресурсы...',
+  'Загружаем данные...',
+  'Подгружаем карточки...',
+  'Скачиваем файлы...',
+  'Запрашиваем API...'
+];
+if (statusText) {
+  const i = Math.floor(Math.random() * requestPhrases.length);
+  statusText.textContent = requestPhrases[i];
+}
+window.addEventListener('load', () => {
+  const elapsed = Date.now() - start;
+  const delay = Math.max(0, minTime - elapsed);
+
+  if (statusText) statusText.textContent = loadingPhrases[Math.floor(Math.random() * loadingPhrases.length)];
+
+  setTimeout(() => {
+    if (statusText) statusText.textContent = finalizingPhrases[Math.floor(Math.random() * finalizingPhrases.length)];
+  }, delay - 1000);
+
+  setTimeout(() => {
+    if (loader) loader.style.display = 'none';
+  }, delay);
+});
+
+window.addEventListener('beforeunload', () => {
+  if (lastClickedElement?.classList.contains('no-loader')) return;
+
+  if (loader) loader.style.display = 'flex';
+  if (statusText) {
+    const i = Math.floor(Math.random() * requestPhrases.length);
+    statusText.textContent = requestPhrases[i];
+  }
+});
+    </script>
+</body>
+</html>

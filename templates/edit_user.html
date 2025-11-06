@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Редактировать пользователя</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+</head>
+<body>
+<div id="page-loader">
+  <div class="spinner-wrapper">
+    <div class="spinner-ring"></div>
+    <img src="/static/logo-w.png" alt="Логотип" class="spinner-logo">
+  </div>
+  <p id="loader-status" class="loader-text"></p>
+
+</div>
+
+    <header>
+        <h3><a href="/admin">Админ панель</a></h3>
+        <p>Редактирование пользователя: {{ user.email }}</p>
+    </header>
+    <main class="dashboard">
+        <section class="card full glass-card">
+            <h2>Редактировать пользователя</h2>
+            <form method="POST">
+                <label>Логин
+                    <input type="text" name="email" value="{{ user.email }}" required>
+                </label>
+                <label>Новый пароль
+                    <input type="password" name="password" placeholder="Оставьте пустым, если не хотите менять">
+                </label>
+                <label>Роль
+                    <select name="role">
+                        <option value="user" {% if user.role == 'user' %}selected{% endif %}>User</option>
+                        <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>Admin</option>
+                    </select>
+                </label>
+                <label>Эндпоинт (Находится в конце URL интеграции)
+                    <input type="text" name="tenant_id" value="{{ user.tenant_id or '' }}">
+                </label>
+
+                <div class="buttons">
+                    <button type="submit" class="saving-btn no-loader">Сохранить</button>
+                    <a class="btn red cancel" href="/admin">Отмена</a>
+                </div>
+            </form>
+            {% if error %}
+    <p style="color: red; text-align: center;">{{ error }}</p>
+{% endif %}
+        </section>
+    </main>
+
+    <script>
+        document.querySelectorAll('.saving-btn').forEach(btn => {
+  const form = btn.closest('form');
+  if (form) {
+    form.addEventListener('submit', function() {
+      btn.disabled = true;
+      btn.innerHTML = 'Сохранение... <span class="spinner"></span>';
+    });
+  }
+});
+document.querySelectorAll('.cancel').forEach(btn => {
+  btn.addEventListener('click', function (e) {
+    btn.disabled = true;
+    btn.innerHTML = 'Выход... <span class="spinner"></span>';
+  });
+});
+let lastClickedElement = null;
+
+// сохраняем последний кликнутый элемент
+document.addEventListener('mousedown', (e) => {
+  lastClickedElement = e.target;
+});
+
+const loader = document.getElementById('page-loader');
+const statusText = document.getElementById('loader-status');
+const minTime = 2000;
+const start = Date.now();
+
+const loadingPhrases = [
+  'Подключаем базу данных...',
+  'Рисуем кнопки...',
+  'Готовим интерфейс...',
+  'Настраиваем стили...',
+  'Закругляем углы...',
+  'Выравниваем текст...'
+];
+
+const finalizingPhrases = [
+  'Пинаем сервера...',
+  'Сдуваем пыль...',
+  'Вроде работает...',
+  'Почти готово...',
+  'Секунду...'
+];
+
+const requestPhrases = [
+  'Загрузка...',
+  'Запрашиваем ресурсы...',
+  'Загружаем данные...',
+  'Подгружаем карточки...',
+  'Скачиваем файлы...',
+  'Запрашиваем API...'
+];
+if (statusText) {
+  const i = Math.floor(Math.random() * requestPhrases.length);
+  statusText.textContent = requestPhrases[i];
+}
+window.addEventListener('load', () => {
+  const elapsed = Date.now() - start;
+  const delay = Math.max(0, minTime - elapsed);
+
+  if (statusText) statusText.textContent = loadingPhrases[Math.floor(Math.random() * loadingPhrases.length)];
+
+  setTimeout(() => {
+    if (statusText) statusText.textContent = finalizingPhrases[Math.floor(Math.random() * finalizingPhrases.length)];
+  }, delay - 1000);
+
+  setTimeout(() => {
+    if (loader) loader.style.display = 'none';
+  }, delay);
+});
+
+window.addEventListener('beforeunload', () => {
+  if (lastClickedElement?.classList.contains('no-loader')) return;
+
+  if (loader) loader.style.display = 'flex';
+  if (statusText) {
+    const i = Math.floor(Math.random() * requestPhrases.length);
+    statusText.textContent = requestPhrases[i];
+  }
+});
+    </script>
+</body>
+</html>
