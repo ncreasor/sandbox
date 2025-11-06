@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Barry — Авторизация</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
+    <link rel="icon" href="/static/logo.png" type="image/png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+</head>
+<body>
+<div id="page-loader">
+  <div class="spinner-wrapper">
+    <div class="spinner-ring"></div>
+    <img src="/static/logo-w.png" alt="Логотип" class="spinner-logo">
+  </div>
+  <p id="loader-status" class="loader-text"></p>
+
+</div>
+
+
+<header>
+    <h3>
+    <a href="/" style="text-decoration: none">Главная</a>
+  </h3>
+  <p class="has-toggle">
+    Авторизация в системе
+  </p>
+</header>
+    <main>
+        <div class="card login-card glass-card">
+            <img src="/static/logo.png" alt="Логотип" class="card-image">
+            <h1>Авторизация</h1>
+
+<form method="POST" action="/login">
+    <label>Логин
+        <input type="text" name="login" placeholder="Введите логин" required>
+    </label>
+    <label>Пароль
+        <input type="password" name="password" placeholder="Введите пароль" required>
+    </label>
+    <label>Эндпоинт
+        <input type="text" name="tenant_id" placeholder="Находится в конце URL интеграции">
+    </label>
+    <button type="submit" class="saving-btn">Вход</button>
+</form>
+<br>
+<a href="#" onclick="alert('Обратитесь к администратору'); return false;">Забыли пароль?</a>
+
+
+            {% if error %}
+                <p style="color:red">{{ error }}</p>
+            {% endif %}
+        </div>
+    </main>
+    <footer>Просто подвал
+        <p>v5.2.4</p>
+    </footer>
+
+    <script>
+document.querySelectorAll('.saving-btn').forEach(btn => {
+  const form = btn.closest('form');
+  if (form) {
+    form.addEventListener('submit', function() {
+      btn.disabled = true;
+      btn.innerHTML = 'Вход... <span class="spinner"></span>';
+    });
+  }
+});
+let lastClickedElement = null;
+
+// сохраняем последний кликнутый элемент
+document.addEventListener('mousedown', (e) => {
+  lastClickedElement = e.target;
+});
+
+const loader = document.getElementById('page-loader');
+const statusText = document.getElementById('loader-status');
+const minTime = 2000;
+const start = Date.now();
+
+const loadingPhrases = [
+  'Подключаем базу данных...',
+  'Рисуем кнопки...',
+  'Готовим интерфейс...',
+  'Настраиваем стили...',
+  'Закругляем углы...',
+  'Выравниваем текст...'
+];
+
+const finalizingPhrases = [
+  'Пинаем сервера...',
+  'Сдуваем пыль...',
+  'Вроде работает...',
+  'Почти готово...',
+  'Секунду...'
+];
+
+const requestPhrases = [
+  'Загрузка...',
+  'Запрашиваем ресурсы...',
+  'Загружаем данные...',
+  'Подгружаем карточки...',
+  'Скачиваем файлы...',
+  'Запрашиваем API...'
+];
+
+if (statusText) {
+  const i = Math.floor(Math.random() * requestPhrases.length);
+  statusText.textContent = requestPhrases[i];
+}
+
+window.addEventListener('load', () => {
+  const elapsed = Date.now() - start;
+  const delay = Math.max(0, minTime - elapsed);
+
+  if (statusText) statusText.textContent = loadingPhrases[Math.floor(Math.random() * loadingPhrases.length)];
+
+  setTimeout(() => {
+    if (statusText) statusText.textContent = finalizingPhrases[Math.floor(Math.random() * finalizingPhrases.length)];
+  }, delay - 1000);
+
+  setTimeout(() => {
+    if (loader) loader.style.display = 'none';
+  }, delay);
+});
+
+window.addEventListener('beforeunload', () => {
+  if (lastClickedElement?.classList.contains('no-loader')) return;
+
+  if (loader) loader.style.display = 'flex';
+  if (statusText) {
+    const i = Math.floor(Math.random() * requestPhrases.length);
+    statusText.textContent = requestPhrases[i];
+  }
+});
+    </script>
+</body>
+</html>
+
+

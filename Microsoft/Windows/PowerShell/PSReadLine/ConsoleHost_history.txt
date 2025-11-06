@@ -1,0 +1,255 @@
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+& C:/Users/Данил/AppData/Local/Programs/Python/Python313/python.exe
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"\
+git commit -m "5.2.4"
+git push restoit main
+git commit -m "5.2.4"\
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .\
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+& C:/Users/Данил/AppData/Local/Programs/Python/Python313/python.exe c:/Users/Данил/Desktop/sandbox.py
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+& C:/Users/Данил/AppData/Local/Programs/Python/Python313/python.exe c:/Users/Данил/Desktop/sandbox.py
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+& C:/Users/Данил/AppData/Local/Programs/Python/Python313/python.exe c:/Users/Данил/Desktop/sandbox.py
+git add .
+git commit -m "5.2.4"
+git push restoit main
+& C:/Users/Данил/AppData/Local/Programs/Python/Python313/python.exe c:/Users/Данил/Desktop/sandbox.py
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+git add .
+git commit -m "5.2.4"
+git push restoit main
+& C:/Users/Данил/AppData/Local/Programs/Python/Python313/python.exe c:/Users/Данил/Desktop/sandbox.py
+pip install qrcode[pil]
+& C:/Users/Данил/AppData/Local/Programs/Python/Python313/python.exe c:/Users/Данил/Desktop/sandbox.py
+django-admin startproject myproject
+cd myproject

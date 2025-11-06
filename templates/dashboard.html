@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Barry — Личный кабинет</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat&display=swap" rel="stylesheet">
+    <link rel="icon" href="/static/logo.png" type="image/png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+</head>
+<body>
+<div id="page-loader">
+  <div class="spinner-wrapper">
+    <div class="spinner-ring"></div>
+    <img src="/static/logo-w.png" alt="Логотип" class="spinner-logo">
+  </div>
+  <p id="loader-status" class="loader-text"></p>
+
+</div>
+
+<nav class="side-nav">
+  <button id="toggle-nav" class="toggle-button">❮</button>
+  <div class="logo-container">
+    <img src="/static/logo.png" alt="Логотип" class="nav-image">
+  </div>
+  <h2 class="side-nav-title">Навигация</h2>
+  <ul>
+    <li><a href="#header">В начало</a></li>
+    <hr>
+    <li><a href="#ofd">Параметры ОФД</a></li>
+    <hr>
+    <li><a href="#core">Параметры ядра</a></li>
+    <hr>
+    <li><a href="#filling">Заполнение задачи</a></li>
+    <hr>
+    
+    <li class="nav-item" data-target="dict">
+      <a href="#dict-search">Поиск в справочнике</a>
+      <hr>
+    </li>
+    
+    <li class="nav-item" data-target="card">
+      <a href="#card-search">Поиск в реестре форм</a>
+      <hr>
+    </li>
+    
+    <li><a href="#other">Другое</a></li>
+    <hr>
+    <li><a href="#template">Шаблон поведения</a></li>
+  </ul>
+</nav>
+    <header id="header">
+        Личный кабинет — {{ login }} ({{ tenant_id }}) | <a href="/logout">Выйти</a>
+        <p class="info">Наведитесь на элемент, чтобы увидеть подсказку</p>
+    </header >
+    <main class="dashboard">
+<div class="column">
+<section id="ofd" class="card glass-card">
+    <h2>Параметры ОФД</h2>
+    <form method="POST" action="/dashboard/ofd">
+        <label class="checkbox-label" title="Включить или выключить автоматический сценарий дня оплаты Оператора Фискальных данных">Включить скрипт ОФД
+            <input type="checkbox" name="ofd_enabled" {% if current_ofd_enabled %}checked{% endif %}>
+        </label>
+        <label title="День месяца, в который применяется сценарий ОФД">
+            День ОФД
+            <select name="ofd_day" id="ofd-day">
+                {% for day in range(1, 32) %}
+                    <option value="{{ day }}" {% if day == current_ofd_day %}selected{% endif %}>{{ day }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label title="Шаблон первого сообщения, отправляемого в день ОФД. Необходимо задать вопрос, ответом на который будет Да или Нет">Приветственное сообщение
+            <textarea class="auto-expand" name="ofd_greeting" id="ofd-greeting" placeholder="Здравствуйте! Ваш вопрос связан с ошибкой фискального регистратора?">{{ current_ofd_greeting }}</textarea>
+        </label>
+        
+        <label title="Шаблон ответа, отправляемого в день ОФД">Шаблон ответа
+            <textarea class="auto-expand" name="ofd_template" id="ofd-template" placeholder="Проверьте оплату ОФД">{{ current_ofd_template }}</textarea>
+        </label>
+        <div class="buttons">
+            <button type="submit" class="save saving-btn no-loader">Сохранить</button>
+        </div>
+    </form>
+</section>
+
+<section id="other" class="card glass-card">
+    <h2>Другое</h2>
+    <form method="POST" action="/dashboard/other">
+
+    <label class="checkbox-label {% if not allow_attachments_toggle %}disabled-setting{% endif %}" title="Включить или выключить автоматическую обработку фото и аудио">
+        Включить обработку файлов
+        <input type="checkbox" name="attachments_enabled"
+        {% if allow_attachments_toggle %}
+            {% if current_attachments_enabled %}checked{% endif %}
+        {% else %}
+            disabled
+        {% endif %}>
+    </label>
+
+    <label class="checkbox-label {% if not allow_multi_channel_toggle %}disabled-setting{% endif %}" title="Включить или выключить отправку ответов в разные каналы (работает только с официальными каналами)">
+        Включить мультиканальность
+        <input type="checkbox" name="multi_channel_enabled"
+        {% if allow_multi_channel_toggle %}
+            {% if current_multi_channel_enabled %}checked{% endif %}
+        {% else %}
+            disabled
+        {% endif %}>
+    </label>
+
+    <label class="checkbox-label" title="Включить или выключить дополнительное сообщение, которое обработчик будет добавлять к своим ответам.">
+        Включить экстренное сообщение
+        <input type="checkbox" name="emergency_message_enabled" {% if current_emergency_message_enabled %}checked{% endif %}>
+    </label>
+
+    <label title="Сообщение, которое бобработчик будет добавлять к своим ответам">
+        Текст экстренного сообщения
+        <textarea class="auto-expand" name="emergency_message_text" id="emergency-message-text" placeholder="Сервера находятся под нагрузкой...">{{ current_emergency_message_text }}</textarea>
+    </label>
+
+    <div class="buttons">
+        <button type="submit" class="save saving-btn no-loader">Сохранить</button>
+    </div>
+    </form>
+</section>
+
+</div>
+
+<section id="core" class="card glass-card">
+    <h2>Параметры ядра</h2>
+    <form method="POST" action="/dashboard/configuration">
+    <label title="Логин который указан в параметрах бота в Pyrus. Необходим для обработки вложений">Логин в Pyrus
+        <input type="text" name="bot_login" value="{{ current_bot_login or '' }}">
+    </label>
+<label title="Температура влияет на вариативность ответов модели. Чем выше, тем креативнее. При слишком высоком значении модель может начать фантазировать">
+  <span>Температура модели: <span id="tempValue">{{ current_temperature or 0.5 }}</span></span>
+  <input type="range" name="temperature" min="0" max="1.5" step="0.01"
+         value="{{ current_temperature or 0.5 }}" id="temperatureRange">
+</label>
+    <label title="Фразы клиента, при которых происходит передача задачи сотруднику. Включите сюда слово, которое будет в названии всех групп для остановки интеграции в этих группах, если это необходимо">
+        Внешние триггеры эскалации
+        <input type="text" name="stop_words" placeholder="'Название группы', стоп, хорошо"  value="{{ current_stop_words or '' }}" >
+    </label>
+    <label title="Фразы, при которых система передаёт задачу сотруднику">
+        Триггеры автоэскалации
+        <input type="text" name="bot_stop_words" placeholder="Anydesk, .." value="{{ current_bot_stop_words or '' }}" >
+    </label>
+    <label title="Часовой пояс организации">Часовой пояс
+        <select name="timezone">
+            {% for offset in range(2, 13) %}
+                <option value="{{ offset }}" {% if current_timezone == offset %}selected{% endif %}>GMT+{{ offset }}</option>
+            {% endfor %}
+        </select>
+    </label>
+
+<label title="Рабочее время">
+    Рабочее время
+    <input type="time" name="work_from" value="{{ current_work_from or '' }}"> 
+    до <input type="time" name="work_to" value="{{ current_work_to or '' }}">
+</label>
+
+<label title="Рабочее время на выходных">
+    Рабочее время на выходных
+    <input type="time" name="work_from_weekend" value="{{ current_work_from_weekend or '' }}"> 
+    до <input type="time" name="work_to_weekend" value="{{ current_work_to_weekend or '' }}">
+</label>
+
+    <label title="Сообщение, которое будет добавлено к ответу в нерабочее время">
+        Сообщение в нерабочее время
+        <textarea class="auto-expand"name="offmsg" placeholder="Ваше обращение поступило в нерабочее время">{{ current_offmsg or '' }}</textarea>
+    </label>
+    <div class="buttons">
+        <button type="submit" class="save saving-btn no-loader">Сохранить</button>
+    </div>
+    </form>
+</section>
+
+<div id="filling" class="column">
+<section id="form-config" class="card glass-card">
+  <h2>Параметры заполнения задачи</h2>
+  <form method="POST" action="/dashboard/form_config" onsubmit="collapseAllFields()">
+    <label class="checkbox-label" title="Включить или выключить автоматическое заполнение полей задчи такими значениями как 'Название' и 'Проблема'">
+      Включить заполнение полей задачи
+      <input type="checkbox" name="form_enabled" {% if current_form_enabled %}checked{% endif %}>
+    </label>
+    <label title="Выбор между автоматическим поиском клиента в справочнике или в реестре форм">
+      Тип автоматического поиска клиента
+      <select name="form_or_card">
+        <option value="" {% if current_form_or_card == '' %}selected{% endif %}>Не задано</option>
+        <option value="form" {% if current_form_or_card == 'form' %}selected{% endif %}>Справочник</option>
+        <option value="card" {% if current_form_or_card == 'card' %}selected{% endif %}>Реестр</option>
+      </select>
+    </label>
+<label title="Поля задачи, которые будут заполняться на основе диалога">Настройка полей для заполения</label>
+<input type="hidden" name="dynamic_fields" id="dynamic_fields" value='{{ current_dynamic_fields | tojson }}'>
+<div id="dynamic-fields-container"></div>
+<button type="button" onclick="addField()" id="add-field-btn" class="btn-add-label no-loader">Добавить поле</button>
+<label title="Шаблон сообщения, для заполнения задачи. Данные подтянутся автоматически из добавленных полей">
+  Шаблон системного сообщения
+  <textarea id="form_template" readonly class="auto-expand" name="form_template" placeholder="Оставьте пустым и нажмите 'Сохранить' для автоматического заполнения">{{ current_form_template or '' }}</textarea>
+</label>
+
+
+    <div class="buttons">
+      <button type="submit" class="save saving-btn no-loader">Сохранить</button>
+    </div>
+  </form>
+</section>
+<section id="dict-search" class="card glass-card" style="display:none;">
+    <h2>Поиск клиента в справочнике</h2>
+    <form method="POST" action="/dashboard/form">
+        <label title="ID справочника, внутри которого находятся клиенты. Находится в адресной строке при открытии справочника в Pyrus">
+            ID справочника
+            <input type="text" name="dictionary_id" value="{{ current_dictionary_id or '' }}">
+        </label>
+        <label title="ID поля со справочником. Находится в шаблоне формы">
+            ID поля со справочником
+            <input type="text" name="dict_field_id" value="{{ current_dict_field_id or '' }}">
+        </label>
+        <label title="Порядковый номер колонки с ключевым полем для поиска">
+            Порядковый номер ключевой колонки
+            <input type="text" name="name_column" value="{{ current_name_column}}">
+        </label>
+        <label title="Порядковый номер колонки, по которой будет происходить фильтрация">
+            Порядковый номер колонки для фильтрации
+            <input type="text" name="filter_column" placeholder="Не заполняйте, если нет фильтров" value="{{ current_filter_column}}">
+        </label>
+        <label title="Значения колонки, по которой будет просиходить фильтрация. Укажите через запятую">
+            Значения для фильтрации
+            <input type="text" name="filter_words" placeholder="Договор, Предоплата" value="{{ current_filter_words or '' }}">
+        </label>
+        <div class="buttons">
+            <button class="save saving-btn no-loader">Сохранить</button>
+        </div>
+    </form>
+</section>
+<section id="card-search" class="card glass-card" style="display:none;">
+    <h2>Поиск клиента в реестре форм</h2>
+    <form method="POST" action="/dashboard/card">
+        <label title="ID формы с клиентом. Находится в адресной строке при открытии справочника в Pyrus">
+            ID формы
+            <input type="text" name="card_id" value="{{ current_card_id or '' }}">
+        </label>
+        <label title="ID поля, внутри которого расположен реестр форм. Находится в шаблоне формы">
+            ID поля с формой
+            <input type="text" name="card_field_id" value="{{ current_card_field_id or '' }}">
+        </label>
+        <label title="ID поля группы с развернутой информацией по форме. Все поля для заполнения должны находиться внутри этой группы">
+            ID поля с группой
+            <input type="text" name="group_id" placeholder="Не заполняйте, если нет группы"  value="{{ current_group_id or '' }}">
+        </label>        
+        <label title="ID поля в форме, по которому будет производиться поиск клиента">
+            ID ключевого поля в форме
+            <input type="text" name="field_id" value="{{ current_field_id or '' }}">
+        </label>
+        <div class="buttons">
+            <button type="submit" class="save saving-btn no-loader">Сохранить</button>
+        </div>
+    </form>
+</section>
+</div>
+
+<section id="template" class="card full glass-card">
+    <h2>Шаблон поведения интеграции</h2>
+    <form method="POST" action="/dashboard/template">
+        <textarea class="auto-expand" name="bot_template" placeholder="Инструкция, по которой будет работать интеграция" title="Системный промпт, определяющий стиль и поведение модели">{{ current_bot_template or '' }}</textarea>
+        <div class="buttons">
+            <button class="save saving-btn no-loader">Сохранить</button>
+        </div>
+    </form>
+</section>
+
+  </main>
+    <footer>Просто подвал
+        <p>v5.2.4</p>
+    </footer>
+    <script>
+const sel = document.querySelector('select[name="form_or_card"]')
+const dict = document.getElementById('dict-search')
+const card = document.getElementById('card-search')
+function upd() {
+  dict.style.display = sel.value === 'form' ? '' : 'none';
+  card.style.display = sel.value === 'card' ? '' : 'none';
+
+const navDict = document.querySelector('.nav-item[data-target="dict"]');
+const navCard = document.querySelector('.nav-item[data-target="card"]');
+
+if (navDict) navDict.style.display = sel.value === 'form' ? '' : 'none';
+if (navCard) navCard.style.display = sel.value === 'card' ? '' : 'none';
+}
+
+sel.addEventListener('change',upd)
+upd()
+
+let fieldCount = 0
+
+let raw = document.getElementById('dynamic_fields').value
+try {
+  const parsed = JSON.parse(raw)
+  if (Array.isArray(parsed)) {
+    parsed.forEach(d => addField(d))
+  }
+} catch {}
+
+function addField(data = {}) {
+  if (fieldCount >= 4) return
+  const container = document.getElementById('dynamic-fields-container')
+  const div = document.createElement('div')
+  div.className = 'dynamic-field'
+  div.dataset.index = fieldCount
+
+  const collapsedTitle = data.name ? `${data.name} (${typeLabel(data.type)})` : 'Новое поле'
+  div.innerHTML = `
+    <div class="collapsed-field" onclick="expandField(this)" style="cursor:pointer; border: 1px solid rgba(255, 255, 255, 0.22); padding: 10px; margin-bottom:12px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center;">
+  <span class="collapsed-title">${collapsedTitle}</span>
+  <button type="button" class="button" onclick="removeFieldBtn(event)" style="font-size: 12px; padding: 1px 6px; line-height: 1;">✕</button>
+</div>
+
+    <div class="expanded-field" style="display:none; border: 1px solid rgba(255, 255, 255, 0.22); padding: 10px; margin-bottom:10px;">
+      <label>Тип поля:
+        <select onchange="onTypeChange(this)" name="field_type_${fieldCount}">
+          <option value="phone" ${data.type === 'phone' ? 'selected' : ''}>Номер телефона</option>
+          <option value="text" ${data.type === 'text' || !data.type ? 'selected' : ''}>Текст</option>
+          <option value="money" ${data.type === 'money' ? 'selected' : ''}>Денежный</option>
+          <option value="select" ${data.type === 'select' ? 'selected' : ''}>Справочник</option>
+        </select>
+      </label>
+      <label>Название поля:
+        <input type="text" name="field_name_${fieldCount}" value="${data.name || ''}" oninput="updateCollapsedTitle(this)">
+      </label>
+      <label>ID поля:
+        <input type="text" name="field_id_${fieldCount}" value="${data.id || ''}">
+      </label>
+      <label class="options-label" style="display:${data.type === 'select' ? 'block' : 'none'}; width: 100%;">
+        Варианты (через /):
+        <input type="text" name="field_options_${fieldCount}" value="${data.options || ''}" style="width: 100%; box-sizing: border-box;">
+    </label>
+      <button type="button" class="done-button" onclick="collapseField(this)">Готово</button>
+    </div>
+  `
+  container.appendChild(div)
+  fieldCount++
+  if (fieldCount >= 4) document.getElementById('add-field-btn').style.display = 'none'
+  
+  const inputs = div.querySelectorAll('input, select')
+  inputs.forEach(i => i.addEventListener('input', () => {
+    updateCollapsedTitle(i)
+    updateTemplate()
+  }))
+  updateTemplate()
+}
+
+function typeLabel(type) {
+  switch(type) {
+    case 'phone': return 'Номер телефона'
+    case 'text': return 'Текст'
+    case 'money': return 'Денежный'
+    case 'select': return 'Выбор'
+    default: return 'Неизвестный'
+  }
+}
+
+function updateCollapsedTitle(input) {
+  const expanded = input.closest('.expanded-field')
+  const container = expanded.parentElement
+  const collapsed = container.querySelector('.collapsed-field')
+  const nameInput = expanded.querySelector(`input[name^="field_name_"]`)
+  const typeSelect = expanded.querySelector(`select[name^="field_type_"]`)
+  const name = nameInput.value.trim() || 'Новое поле'
+  const type = typeSelect.value
+  const titleSpan = collapsed.querySelector('.collapsed-title')
+  if (titleSpan) {
+    titleSpan.textContent = `${name} (${typeLabel(type)})`
+  }
+}
+
+function expandField(collapsedDiv) {
+  if (event.target.tagName === 'BUTTON') return
+  const container = collapsedDiv.parentElement
+  container.querySelector('.collapsed-field').style.display = 'none'
+  container.querySelector('.expanded-field').style.display = 'block'
+}
+
+function collapseField(button) {
+  const expanded = button.parentElement
+  const container = expanded.parentElement
+  const collapsed = container.querySelector('.collapsed-field')
+  const nameInput = expanded.querySelector(`input[name^="field_name_"]`)
+  const typeSelect = expanded.querySelector(`select[name^="field_type_"]`)
+  const name = nameInput.value.trim() || 'Новое поле'
+  const type = typeSelect.value
+  const titleSpan = collapsed.querySelector('.collapsed-title')
+  if (titleSpan) {
+    titleSpan.textContent = `${name} (${typeLabel(type)})`
+  }
+  collapsed.style.display = 'block'
+  expanded.style.display = 'none'
+  updateTemplate()
+}
+
+function removeFieldBtn(event) {
+  event.stopPropagation()
+  const container = event.target.closest('.dynamic-field')
+  container.remove()
+  fieldCount--
+  if (fieldCount < 4) document.getElementById('add-field-btn').style.display = ''
+  updateTemplate()
+}
+
+
+function onTypeChange(select) {
+  const expanded = select.closest('.expanded-field')
+  const optionsLabel = expanded.querySelector('.options-label')
+  if (select.value === 'select') {
+    optionsLabel.style.display = 'block'
+  } else {
+    optionsLabel.style.display = 'none'
+    optionsLabel.querySelector('input').value = ''
+  }
+  updateTemplate()
+}
+
+function updateTemplate() {
+  const fields = document.querySelectorAll('#dynamic-fields-container .dynamic-field')
+  let text = 'Ты должен проанализировать текущую переписку и подвести ее итоги:\n'
+  let format = 'Твой ответ должен быть в формате:\n'
+
+  fields.forEach(f => {
+    const expanded = f.querySelector('.expanded-field')
+    if (!expanded) return
+
+    const type = expanded.querySelector('select[name^="field_type_"]').value
+    const name = expanded.querySelector('input[name^="field_name_"]').value.trim()
+    const opts = expanded.querySelector('input[name^="field_options_"]')?.value
+    if (!name) return
+
+    if (type === 'phone') {
+      text += `  - ${name}. (если нет, то ""). Преобразуй номер в "+7..."\n`
+      format += `    ${name}: "+7...", `
+    } else if (type === 'text') {
+      text += `  - ${name}. (если нет, то "").\n`
+      format += `    ${name}: "${name}", `
+    } else if (type === 'money') {
+      text += `  - ${name}. (если нет, то ""). Преобразовывай любые значения в целое число.\n`
+      format += `    ${name}: "Целое число", `
+    } else if (type === 'select') {
+      const variants = opts?.split('/').map(v => v.trim()).filter(Boolean)
+      text += `  - ${name}. На выбор есть только ${variants.length}: "${variants.join('"/"')}".\n`
+      format += `    ${name}: "${name}", `
+    }
+  })
+
+  format = format.replace(/, $/, '')
+  document.getElementById('form_template').value = text + format
+}
+
+
+function gatherFields() {
+  const fields = []
+  document.querySelectorAll('#dynamic-fields-container .dynamic-field').forEach(f => {
+    const expanded = f.querySelector('.expanded-field')
+    if (!expanded) return
+    const type = expanded.querySelector('select[name^="field_type_"]').value
+    const name = expanded.querySelector('input[name^="field_name_"]').value.trim()
+    const id = expanded.querySelector('input[name^="field_id_"]').value.trim()
+    const options = expanded.querySelector('input[name^="field_options_"]').value.trim()
+    if (!name) return
+    const field = {type, name, id}
+    if (type === 'select') field.options = options
+    fields.push(field)
+  })
+  return fields
+}
+
+function collapseAllFields() {
+  document.querySelectorAll('.expanded-field').forEach(expanded => {
+    const container = expanded.parentElement
+    const collapseBtn = expanded.querySelector('button')
+    if (collapseBtn) collapseBtn.click()
+  })
+}
+
+document.querySelector('#form-config form').addEventListener('submit', e => {
+  collapseAllFields()
+  const fields = gatherFields()
+  document.getElementById('dynamic_fields').value = JSON.stringify(fields)
+})
+
+document.addEventListener("DOMContentLoaded", function () {
+    const dictSection = document.getElementById("dict-search");
+    const navLink = document.querySelector('a[href="#dict-search"]')?.closest("li");
+
+    if (dictSection && getComputedStyle(dictSection).display === "none" && navLink) {
+        navLink.style.display = "none";
+    }
+});
+
+const nav = document.querySelector('.side-nav');
+const btn = document.getElementById('toggle-nav');
+
+if (localStorage.getItem('navCollapsed') === 'true') {
+  nav.classList.add('collapsed');
+}
+
+btn.addEventListener('click', () => {
+  nav.classList.toggle('collapsed');
+  localStorage.setItem('navCollapsed', nav.classList.contains('collapsed'));
+});
+
+
+document.querySelectorAll('.saving-btn').forEach(btn => {
+  const form = btn.closest('form');
+  if (form) {
+    form.addEventListener('submit', function() {
+      btn.disabled = true;
+      btn.innerHTML = 'Сохранение... <span class="spinner"></span>';
+    });
+  }
+});
+
+let lastClickedElement = null;
+
+// сохраняем последний кликнутый элемент
+document.addEventListener('mousedown', (e) => {
+  lastClickedElement = e.target;
+});
+
+const loader = document.getElementById('page-loader');
+const statusText = document.getElementById('loader-status');
+const minTime = 2000;
+const start = Date.now();
+
+const loadingPhrases = [
+  'Подключаем базу данных...',
+  'Рисуем кнопки...',
+  'Готовим интерфейс...',
+  'Настраиваем стили...',
+  'Закругляем углы...',
+  'Выравниваем текст...'
+];
+
+const finalizingPhrases = [
+  'Пинаем сервера...',
+  'Сдуваем пыль...',
+  'Вроде работает...',
+  'Почти готово...',
+  'Секунду...'
+];
+
+const requestPhrases = [
+  'Загрузка...',
+  'Запрашиваем ресурсы...',
+  'Загружаем данные...',
+  'Подгружаем карточки...',
+  'Скачиваем файлы...',
+  'Запрашиваем API...'
+];
+if (statusText) {
+  const i = Math.floor(Math.random() * requestPhrases.length);
+  statusText.textContent = requestPhrases[i];
+}
+window.addEventListener('load', () => {
+  const elapsed = Date.now() - start;
+  const delay = Math.max(0, minTime - elapsed);
+
+  if (statusText) statusText.textContent = loadingPhrases[Math.floor(Math.random() * loadingPhrases.length)];
+
+  setTimeout(() => {
+    if (statusText) statusText.textContent = finalizingPhrases[Math.floor(Math.random() * finalizingPhrases.length)];
+  }, delay - 1000);
+
+  setTimeout(() => {
+    if (loader) loader.style.display = 'none';
+  }, delay);
+});
+
+window.addEventListener('beforeunload', () => {
+  if (lastClickedElement?.classList.contains('no-loader')) return;
+
+  if (loader) loader.style.display = 'flex';
+  if (statusText) {
+    const i = Math.floor(Math.random() * requestPhrases.length);
+    statusText.textContent = requestPhrases[i];
+  }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const textareas = document.querySelectorAll('textarea.auto-expand');
+
+    textareas.forEach(textarea => {
+        let manuallyExpanded = false;
+
+        function autoResize() {
+            textarea.style.height = 'auto';
+            const newHeight = Math.min(textarea.scrollHeight, 300);
+            textarea.style.height = newHeight + 'px';
+        }
+
+        textarea.addEventListener('focus', autoResize);
+        textarea.addEventListener('input', autoResize);
+        textarea.addEventListener('click', () => manuallyExpanded = true);
+        textarea.addEventListener('blur', () => {
+            if (!manuallyExpanded) {
+                textarea.style.height = 'auto';
+                const shrinkHeight = Math.min(textarea.scrollHeight, 150);
+                textarea.style.height = shrinkHeight + 'px';
+            }
+        });
+
+        autoResize();
+    });
+});
+
+
+  const range = document.getElementById('temperatureRange');
+  const display = document.getElementById('tempValue');
+
+  range.addEventListener('input', () => {
+    display.textContent = range.value;
+  });
+</script>
+
+</body>
+</html>
