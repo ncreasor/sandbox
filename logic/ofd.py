@@ -1,5 +1,5 @@
 from quart import jsonify
-from logic.core import approve, approved
+from logic.core import approve, is_approved
 from logic.cache import get_cache_config
 from logic.regform_updater import tasks_today
 
@@ -9,7 +9,7 @@ negative_answers = {"нет", "неа", "никак", "ни в коем случ
 
 async def check(task, id, sessions, answer, pyrus_key, tenant_id):
     try:
-        if task["is_closed"] or id in approved:
+        if task["is_closed"] or await is_approved(id):
             print("Closed"); return jsonify({})
         config = get_cache_config(pyrus_key)
         

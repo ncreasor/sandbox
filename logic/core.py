@@ -8,8 +8,32 @@ from logic.serv import flds, template
 from logic.cache import get_cache_config
 from logic.regform_updater import tasks_today
 
+# Thread-safe state management
 approved = set()
 processed = set()
+_approved_lock = asyncio.Lock()
+_processed_lock = asyncio.Lock()
+
+# Thread-safe helper functions
+async def is_approved(task_id: int) -> bool:
+    """Check if task is already approved (thread-safe)"""
+    async with _approved_lock:
+        return task_id in approved
+
+async def mark_approved(task_id: int):
+    """Mark task as approved (thread-safe)"""
+    async with _approved_lock:
+        approved.add(task_id)
+
+async def is_processed(url: str) -> bool:
+    """Check if attachment URL is already processed (thread-safe)"""
+    async with _processed_lock:
+        return url in processed
+
+async def mark_processed(url: str):
+    """Mark attachment URL as processed (thread-safe)"""
+    async with _processed_lock:
+        processed.add(url)
 
 # Вспомогательные функции для Assistants API
 async def create_or_get_thread(sessions, id, client):
@@ -33,8 +57,8 @@ async def approve(sessions, id, config, pyrus_key, task, tenant_id): # https://s
             response.update(await flds(sessions, id, pyrus_key, task))
 
     sessions.pop(id, None)
-    approved.add(id)
-    tasks_today[tenant_id] = tasks_today.get(tenant_id, 0) + 1 
+    await mark_approved(id)
+    tasks_today[tenant_id] = tasks_today.get(tenant_id, 0) + 1
 
     return jsonify(response)
 
@@ -57,7 +81,7 @@ def is_working_now(config: dict):
 # Обработка задачи
 async def processing(task, id, sessions, pyrus_key, model, client, tenant_id):
     try:
-        if task["is_closed"] or id in approved:
+        if task["is_closed"] or await is_approved(id):
             return jsonify({})
         
         config = get_cache_config(pyrus_key)
@@ -102,9 +126,9 @@ async def processing(task, id, sessions, pyrus_key, model, client, tenant_id):
             return await approve(sessions, id, config, pyrus_key, task, tenant_id)
 
         if attachs:
-            if (url := attachs[-1].get("url")) and url not in processed:
+            if (url := attachs[-1].get("url")) and not await is_processed(url):
                 attach_text = await inf(url, attachs[-1].get("name"), pyrus_key)
-                processed.add(url)
+                await mark_processed(url)
 
         if not text and not attach_text:
             return await approve(sessions, id, config, pyrus_key, task, tenant_id)
@@ -135,7 +159,7 @@ async def integrations(sessions, text, channel, id, config, model, task, client,
     if any(word in resptext.lower() for word in bot_stop_words):
         response["approval_choice"] = "approved"
         sessions.pop(id, None)
-        approved.add(id)
+        await mark_approved(id)
         tasks_today[tenant_id] = tasks_today.get(tenant_id, 0) + 1
 
     print("integrations:", resptext)
@@ -223,7 +247,7 @@ async def prep(sessions, text, channel, id, pyrus_key, config, model, task, clie
         if config["form_config"]["enabled"]:
             response.update(await flds(sessions, id, pyrus_key, task))
         sessions.pop(id, None)
-        approved.add(id)
+        await mark_approved(id)
         tasks_today[tenant_id] = tasks_today.get(tenant_id, 0) + 1 
 
     print(resptext)
